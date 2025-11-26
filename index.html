@@ -24,6 +24,46 @@
             grid-template-columns: 320px 1fr;
             gap: 20px;
             height: calc(100vh - 40px);
+            position: relative;
+        }
+
+        .controls-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            padding: 12px 20px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .controls-toggle:hover {
+            background: #1976D2;
+        }
+
+        .controls-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .controls-backdrop.show {
+            display: block;
+            opacity: 1;
         }
 
         .controls {
@@ -213,11 +253,112 @@
             font-size: 16px;
             color: #2196F3;
         }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                grid-template-columns: 1fr;
+                height: auto;
+                gap: 10px;
+            }
+
+            .controls-toggle {
+                display: block;
+            }
+
+            .controls {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 85%;
+                max-width: 320px;
+                height: 100vh;
+                max-height: 100vh;
+                overflow-y: auto;
+                z-index: 999;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                border-radius: 0;
+            }
+
+            .controls.open {
+                transform: translateX(0);
+                box-shadow: 2px 0 8px rgba(0,0,0,0.3);
+            }
+
+            .canvas-container {
+                height: calc(100vh - 20px);
+                max-height: calc(100vh - 20px);
+                padding: 10px;
+            }
+
+            .control-group h3 {
+                font-size: 13px;
+            }
+
+            .slider-container label,
+            .radio-option label,
+            .color-input label {
+                font-size: 12px;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            button {
+                padding: 12px;
+                font-size: 16px;
+            }
+
+            .info p {
+                font-size: 13px;
+            }
+
+            /* Increase touch targets */
+            .radio-option {
+                padding: 12px 8px;
+                min-height: 44px;
+            }
+
+            .checkbox-container {
+                min-height: 44px;
+            }
+
+            input[type="range"] {
+                height: 44px;
+            }
+
+            input[type="color"] {
+                height: 50px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .controls {
+                width: 90%;
+            }
+
+            h2 {
+                font-size: 15px;
+            }
+
+            .control-group {
+                margin-bottom: 15px;
+                padding-bottom: 12px;
+            }
+        }
     </style>
 </head>
 <body>
+    <button class="controls-toggle" onclick="toggleControls()">☰ Controls</button>
+    <div class="controls-backdrop" id="controlsBackdrop" onclick="toggleControls()"></div>
     <div class="container">
-        <div class="controls">
+        <div class="controls" id="controls">
             <h2>Hexagram Mosaic Config</h2>
 
             <div class="slider-container">
@@ -371,6 +512,7 @@
         };
         let isPanning = false;
         let startPoint = { x: 0, y: 0 };
+        let lastTouchDistance = 0;
 
         // Generate center hexagons for hexagram (matching Python logic)
         function generateCenterHexagons(layers) {
@@ -773,6 +915,91 @@
                 svg.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`);
             });
 
+            // Touch events for mobile
+            svg.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    // Single touch - pan
+                    isPanning = true;
+                    const rect = svg.getBoundingClientRect();
+                    startPoint = {
+                        x: e.touches[0].clientX - rect.left,
+                        y: e.touches[0].clientY - rect.top
+                    };
+                } else if (e.touches.length === 2) {
+                    // Two fingers - prepare for pinch zoom
+                    isPanning = false;
+                    const touch1 = e.touches[0];
+                    const touch2 = e.touches[1];
+                    lastTouchDistance = Math.hypot(
+                        touch2.clientX - touch1.clientX,
+                        touch2.clientY - touch1.clientY
+                    );
+                }
+                e.preventDefault();
+            }, { passive: false });
+
+            svg.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && isPanning) {
+                    // Single touch - pan
+                    const rect = svg.getBoundingClientRect();
+                    const currentX = e.touches[0].clientX - rect.left;
+                    const currentY = e.touches[0].clientY - rect.top;
+
+                    const dx = (startPoint.x - currentX) * (viewBox.width / rect.width);
+                    const dy = (startPoint.y - currentY) * (viewBox.height / rect.height);
+
+                    viewBox.x += dx;
+                    viewBox.y += dy;
+
+                    startPoint.x = currentX;
+                    startPoint.y = currentY;
+
+                    svg.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`);
+                } else if (e.touches.length === 2) {
+                    // Two fingers - pinch zoom
+                    const touch1 = e.touches[0];
+                    const touch2 = e.touches[1];
+                    const currentDistance = Math.hypot(
+                        touch2.clientX - touch1.clientX,
+                        touch2.clientY - touch1.clientY
+                    );
+
+                    if (lastTouchDistance > 0) {
+                        const zoomFactor = lastTouchDistance / currentDistance;
+                        const rect = svg.getBoundingClientRect();
+
+                        // Get center point between two fingers
+                        const centerX = ((touch1.clientX + touch2.clientX) / 2) - rect.left;
+                        const centerY = ((touch1.clientY + touch2.clientY) / 2) - rect.top;
+
+                        const svgX = viewBox.x + (centerX / rect.width) * viewBox.width;
+                        const svgY = viewBox.y + (centerY / rect.height) * viewBox.height;
+
+                        const newWidth = viewBox.width * zoomFactor;
+                        const newHeight = viewBox.height * zoomFactor;
+
+                        viewBox.x = svgX - (centerX / rect.width) * newWidth;
+                        viewBox.y = svgY - (centerY / rect.height) * newHeight;
+                        viewBox.width = newWidth;
+                        viewBox.height = newHeight;
+
+                        svg.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`);
+                    }
+
+                    lastTouchDistance = currentDistance;
+                }
+                e.preventDefault();
+            }, { passive: false });
+
+            svg.addEventListener('touchend', (e) => {
+                if (e.touches.length < 2) {
+                    lastTouchDistance = 0;
+                }
+                if (e.touches.length === 0) {
+                    isPanning = false;
+                }
+            });
+
             svg.style.cursor = 'grab';
         }
 
@@ -936,6 +1163,31 @@
 
             img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
         }
+
+        // Toggle controls panel on mobile
+        function toggleControls() {
+            const controls = document.getElementById('controls');
+            const backdrop = document.getElementById('controlsBackdrop');
+            controls.classList.toggle('open');
+            backdrop.classList.toggle('show');
+        }
+
+        // Adjust default settings for mobile devices
+        if (window.innerWidth <= 768) {
+            config.hexSize = 20;
+            config.starLayers = 4;
+            document.getElementById('hexSize').value = 20;
+            document.getElementById('hexSizeValue').textContent = 20;
+            document.getElementById('starLayers').value = 4;
+            document.getElementById('starLayersValue').textContent = 4;
+        }
+
+        // Handle orientation changes on mobile
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                render();
+            }, 100);
+        });
 
         // Initial render
         updatePatternControls();
