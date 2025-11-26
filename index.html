@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hexagram Star Mosaic Visualization</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="title-bar">
+        <h1>Hexagram Mosaic</h1>
+    </div>
+
+    <!-- Mobile Toggle -->
+    <button class="controls-toggle" onclick="toggleControls()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        Configure
+    </button>
+    <div class="controls-backdrop" id="controlsBackdrop" onclick="toggleControls()"></div>
+
+    <div class="container">
+        <!-- Sidebar Controls -->
+        <div class="controls" id="controls">
+            <div class="logo-area">
+                <h2>Configuration</h2>
+            </div>
+
+            <div class="control-group">
+                <h3>Grid Settings</h3>
+                <div class="slider-container">
+                    <div class="slider-header">
+                        <label>Hexagram Layers</label>
+                        <span class="value" id="starLayersValue">10 (541)</span>
+                    </div>
+                    <input type="range" id="starLayers" min="0" max="52" value="9">
+                </div>
+                <!-- Pixel Size -->
+                <div class="slider-container">
+                    <div class="slider-header">
+                        <label>Hexagon Size</label>
+                        <span class="value" id="hexSizeValue">25</span>
+                    </div>
+                    <input type="range" id="hexSize" min="15" max="50" value="25">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Pattern Type</h3>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="patternFlower" name="pattern" value="flower" checked>
+                        <label for="patternFlower">Flower/Rosette Pattern</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="patternPerimeter" name="pattern" value="perimeter">
+                        <label for="patternPerimeter">Perimeter Pattern</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="patternMosaic" name="pattern" value="mosaic">
+                        <label for="patternMosaic">Diagonal Mosaic</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="patternTriangles" name="pattern" value="triangles">
+                        <label for="patternTriangles">12 Triangles</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="patternCenterHighlight" name="pattern" value="centerHighlight">
+                        <label for="patternCenterHighlight">Center Highlight</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="patternSixSides" name="pattern" value="sixSides">
+                        <label for="patternSixSides">Six Sides</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flower Controls -->
+            <div class="control-group" id="flowerControls">
+                <h3>Flower Colors</h3>
+                <div class="slider-container">
+                    <div class="slider-header">
+                        <label>Flower Spacing</label>
+                        <span class="value" id="flowerSpacingValue">3</span>
+                    </div>
+                    <input type="range" id="flowerSpacing" min="2" max="6" value="3">
+                </div>
+                <div class="color-grid">
+                    <div class="color-input">
+                        <label>Center</label>
+                        <input type="color" id="flowerCenter" value="#003366">
+                    </div>
+                    <div class="color-input">
+                        <label>Petal</label>
+                        <input type="color" id="flowerPetal" value="#ffffff">
+                    </div>
+                    <div class="color-input">
+                        <label>Back</label>
+                        <input type="color" id="flowerBackground" value="#808080">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Perimeter Controls -->
+            <div class="control-group" id="perimeterControls" style="display: none;">
+                <h3>Perimeter Colors</h3>
+                <div class="color-grid">
+                    <div class="color-input">
+                        <label>Perimeter</label>
+                        <input type="color" id="perimeterColor" value="#003366">
+                    </div>
+                    <div class="color-input">
+                        <label>Interior</label>
+                        <input type="color" id="interiorColor" value="#a9a9a9">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mosaic Controls -->
+            <div class="control-group" id="mosaicControls" style="display: none;">
+                <h3>Mosaic Settings</h3>
+                <div class="slider-container">
+                    <label style="display:block; margin-bottom:8px;">Direction</label>
+                    <select id="mosaicDirection">
+                        <option value="diagonal1">Diagonal</option>
+                        <option value="vertical">Vertical</option>
+                        <option value="horizontal">Horizontal</option>
+                    </select>
+                </div>
+                <div class="color-grid">
+                    <div class="color-input">
+                        <label>Color 1</label>
+                        <input type="color" id="mosaicColor1" value="#006400">
+                    </div>
+                    <div class="color-input">
+                        <label>Color 2</label>
+                        <input type="color" id="mosaicColor2" value="#ffffff">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Highlight Controls -->
+            <div class="control-group" id="centerHighlightControls" style="display: none;">
+                <h3>Center Highlight Colors</h3>
+                <div class="color-grid">
+                    <div class="color-input">
+                        <label>Center</label>
+                        <input type="color" id="centerHighlightCenter" value="#FFD700">
+                    </div>
+                    <div class="color-input">
+                        <label>Outer</label>
+                        <input type="color" id="centerHighlightOuter" value="#4169E1">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Six Sides Controls -->
+            <div class="control-group" id="sixSidesControls" style="display: none;">
+                <h3>Six Sides Colors</h3>
+                <div class="color-grid">
+                    <div class="color-input">
+                        <label>Arms</label>
+                        <input type="color" id="sixSidesArm" value="#1f77b4">
+                    </div>
+                    <div class="color-input">
+                        <label>Center</label>
+                        <input type="color" id="sixSidesCenter" value="#008000">
+                    </div>
+                    <div class="color-input">
+                        <label>Origin</label>
+                        <input type="color" id="sixSidesCenterHex" value="#FFD700">
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Display</h3>
+                <div class="color-grid">
+                    <div class="color-input">
+                        <label>Edge Color</label>
+                        <input type="color" id="edgeColor" value="#333333">
+                    </div>
+                </div>
+                <div class="checkbox-container" style="margin-top: 15px;">
+                    <input type="checkbox" id="showLabels" checked>
+                    <label for="showLabels">Show Number Labels</label>
+                </div>
+                <div style="margin-top: 15px;">
+                    <label style="display:block; margin-bottom:8px;">Hexagon Border Style</label>
+                    <select id="hexBorderStyle">
+                        <option value="filled">Filled</option>
+                        <option value="single">Single Line</option>
+                        <option value="double">Double Line</option>
+                        <option value="dashed">Dashed Line</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="buttons">
+                <button class="reset" onclick="resetView()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                        <path d="M3 3v5h5" />
+                    </svg>
+                    Reset
+                </button>
+                <button class="save" onclick="savePNG()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                        <polyline points="17 21 17 13 7 13 7 21" />
+                        <polyline points="7 3 7 8 15 8" />
+                    </svg>
+                    Save PNG
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Visualization Area -->
+        <div class="canvas-container">
+            <svg id="hexCanvas"></svg>
+
+            <!-- Floating Info Panel -->
+            <div class="info-panel">
+                <div class="info-item">
+                    <span>Total Hexagons</span>
+                    <span id="totalHex">0</span>
+                </div>
+                <div class="info-item">
+                    <span>Perimeter Count</span>
+                    <span id="perimeterCount">0</span>
+                </div>
+                <div class="info-item" id="flowerInfo" style="display:none;">
+                    <span>Flower Centers</span>
+                    <span id="flowerCenterCount">0</span>
+                </div>
+                <div class="info-item" id="outlineInfo" style="display:none;">
+                    <div class="legend-label">
+                        <div class="color-swatch" id="outlineSwatch"></div>
+                        <span>Color 1 Outline</span>
+                    </div>
+                    <span id="outlineCount">0</span>
+                </div>
+                <div class="info-item" id="interiorInfo" style="display:none;">
+                    <div class="legend-label">
+                        <div class="color-swatch" id="interiorSwatch"></div>
+                        <span>Color 2 Interior</span>
+                    </div>
+                    <span id="interiorCount">0</span>
+                </div>
+                <div class="info-item" id="centerHighlightInfo" style="display:none;">
+                    <div class="legend-label">
+                        <div class="color-swatch" id="centerHighlightSwatch"></div>
+                        <span>Center</span>
+                    </div>
+                    <span id="centerHighlightCount">0</span>
+                </div>
+                <div class="info-item" id="outerHighlightInfo" style="display:none;">
+                    <div class="legend-label">
+                        <div class="color-swatch" id="outerHighlightSwatch"></div>
+                        <span>Outer</span>
+                    </div>
+                    <span id="outerHighlightCount">0</span>
+                </div>
+                <div class="info-item" id="sixSidesArmInfo" style="display:none;">
+                    <div class="legend-label">
+                        <div class="color-swatch" id="sixSidesArmSwatch"></div>
+                        <span>Arms</span>
+                    </div>
+                    <span id="sixSidesArmCount">0</span>
+                </div>
+                <div class="info-item" id="sixSidesCenterInfo" style="display:none;">
+                    <div class="legend-label">
+                        <div class="color-swatch" id="sixSidesCenterSwatch"></div>
+                        <span>Center Region</span>
+                    </div>
+                    <span id="sixSidesCenterCount">0</span>
+                </div>
+                <div class="info-item" id="sixSidesCenterHexInfo" style="display:none;">
+                    <div class="legend-label">
+                        <div class="color-swatch" id="sixSidesCenterHexSwatch"></div>
+                        <span>Origin Hex</span>
+                    </div>
+                    <span id="sixSidesCenterHexCount">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
