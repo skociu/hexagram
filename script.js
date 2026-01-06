@@ -1,6 +1,6 @@
 // Hexagon grid configuration
 let config = {
-    starLayers: 10,
+    starLayers: 9,
     patternType: 'flower',
     flowerSpacing: 3,
     flowerCenter: '#003366',
@@ -630,10 +630,10 @@ function updatePatternControls() {
 // Event listeners
 document.getElementById('starLayers').addEventListener('input', (e) => {
     config.starLayers = parseInt(e.target.value);
-    // Calculate total hexagon count using centered 12-gonal formula: 6*k*(k-1) + 1
-    const totalHexagons = 6 * config.starLayers * (config.starLayers - 1) + 1;
-    document.getElementById('starLayersValue').textContent = totalHexagons;
     render();
+    // Calculate actual hexagon count after rendering
+    const hexagons = generateHexagram(config.starLayers);
+    document.getElementById('starLayersValue').textContent = `${config.starLayers + 1} (${hexagons.length})`;
 });
 
 document.querySelectorAll('input[name="pattern"]').forEach(radio => {
@@ -713,7 +713,7 @@ document.getElementById('hexBorderStyle').addEventListener('change', (e) => {
 
 function resetView() {
     config = {
-        starLayers: 10,
+        starLayers: 9,
         patternType: 'flower',
         flowerSpacing: 3,
         flowerCenter: '#003366',
@@ -730,8 +730,8 @@ function resetView() {
         hexBorderStyle: 'filled'
     };
 
-    document.getElementById('starLayers').value = 10;
-    document.getElementById('starLayersValue').textContent = 541; // 6*10*9 + 1
+    document.getElementById('starLayers').value = 9;
+    document.getElementById('starLayersValue').textContent = '10 (541)';
     document.getElementById('patternFlower').checked = true;
     document.getElementById('flowerSpacing').value = 3;
     document.getElementById('flowerSpacingValue').textContent = 3;
