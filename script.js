@@ -1,6 +1,6 @@
 // Hexagon grid configuration
 let config = {
-    starLayers: 5,
+    starLayers: 10,
     patternType: 'flower',
     flowerSpacing: 3,
     flowerCenter: '#003366',
@@ -13,7 +13,8 @@ let config = {
     mosaicDirection: 'diagonal1',
     edgeColor: '#333333',
     hexSize: 25,
-    showLabels: true
+    showLabels: true,
+    hexBorderStyle: 'filled'
 };
 
 // Zoom and pan state
@@ -216,8 +217,6 @@ function createMosaicPattern(hexagons) {
 
     const directionFormulas = {
         'diagonal1': (h) => h.q + h.r,
-        'diagonal2': (h) => h.s,
-        'diagonal3': (h) => h.q - h.r,
         'vertical': (h) => h.q + Math.floor(h.r / 2),
         'horizontal': (h) => h.r
     };
@@ -371,13 +370,48 @@ function render() {
         // Create group for hexagon and text
         const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 
-        // Create hexagon
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', hexPath(x, y, size * 0.95));
-        path.setAttribute('fill', hexColor);
-        path.setAttribute('stroke', config.edgeColor);
-        path.setAttribute('stroke-width', '1.5');
-        g.appendChild(path);
+        // Create hexagon based on border style
+        if (config.hexBorderStyle === 'filled') {
+            // Standard filled hexagon
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', hexPath(x, y, size * 0.95));
+            path.setAttribute('fill', hexColor);
+            path.setAttribute('stroke', config.edgeColor);
+            path.setAttribute('stroke-width', '1.5');
+            g.appendChild(path);
+        } else if (config.hexBorderStyle === 'single') {
+            // Single line outline only
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', hexPath(x, y, size * 0.95));
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', hexColor);
+            path.setAttribute('stroke-width', '2.5');
+            g.appendChild(path);
+        } else if (config.hexBorderStyle === 'double') {
+            // Double line outline
+            const outerPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            outerPath.setAttribute('d', hexPath(x, y, size * 0.95));
+            outerPath.setAttribute('fill', 'none');
+            outerPath.setAttribute('stroke', hexColor);
+            outerPath.setAttribute('stroke-width', '2');
+            g.appendChild(outerPath);
+
+            const innerPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            innerPath.setAttribute('d', hexPath(x, y, size * 0.75));
+            innerPath.setAttribute('fill', 'none');
+            innerPath.setAttribute('stroke', hexColor);
+            innerPath.setAttribute('stroke-width', '2');
+            g.appendChild(innerPath);
+        } else if (config.hexBorderStyle === 'dashed') {
+            // Dashed line outline
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', hexPath(x, y, size * 0.95));
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', hexColor);
+            path.setAttribute('stroke-width', '2.5');
+            path.setAttribute('stroke-dasharray', `${size * 0.3} ${size * 0.15}`);
+            g.appendChild(path);
+        }
 
         // Create text label
         if (config.showLabels) {
@@ -387,7 +421,14 @@ function render() {
             text.setAttribute('text-anchor', 'middle');
             text.setAttribute('dominant-baseline', 'middle');
             text.setAttribute('font-size', size * 0.35);
-            text.setAttribute('fill', getTextColor(hexColor));
+
+            // Use appropriate text color based on border style
+            if (config.hexBorderStyle === 'filled') {
+                text.setAttribute('fill', getTextColor(hexColor));
+            } else {
+                text.setAttribute('fill', hexColor);
+            }
+
             text.setAttribute('font-weight', 'normal');
             text.textContent = hex.id;
             g.appendChild(text);
@@ -589,7 +630,9 @@ function updatePatternControls() {
 // Event listeners
 document.getElementById('starLayers').addEventListener('input', (e) => {
     config.starLayers = parseInt(e.target.value);
-    document.getElementById('starLayersValue').textContent = config.starLayers;
+    // Calculate total hexagon count using centered 12-gonal formula: 6*k*(k-1) + 1
+    const totalHexagons = 6 * config.starLayers * (config.starLayers - 1) + 1;
+    document.getElementById('starLayersValue').textContent = totalHexagons;
     render();
 });
 
@@ -663,9 +706,14 @@ document.getElementById('showLabels').addEventListener('change', (e) => {
     render();
 });
 
+document.getElementById('hexBorderStyle').addEventListener('change', (e) => {
+    config.hexBorderStyle = e.target.value;
+    render();
+});
+
 function resetView() {
     config = {
-        starLayers: 5,
+        starLayers: 10,
         patternType: 'flower',
         flowerSpacing: 3,
         flowerCenter: '#003366',
@@ -678,11 +726,12 @@ function resetView() {
         mosaicDirection: 'diagonal1',
         edgeColor: '#333333',
         hexSize: 25,
-        showLabels: true
+        showLabels: true,
+        hexBorderStyle: 'filled'
     };
 
-    document.getElementById('starLayers').value = 5;
-    document.getElementById('starLayersValue').textContent = 5;
+    document.getElementById('starLayers').value = 10;
+    document.getElementById('starLayersValue').textContent = 541; // 6*10*9 + 1
     document.getElementById('patternFlower').checked = true;
     document.getElementById('flowerSpacing').value = 3;
     document.getElementById('flowerSpacingValue').textContent = 3;
@@ -698,6 +747,7 @@ function resetView() {
     document.getElementById('hexSize').value = 25;
     document.getElementById('hexSizeValue').textContent = 25;
     document.getElementById('showLabels').checked = true;
+    document.getElementById('hexBorderStyle').value = 'filled';
 
     const maxRadius = config.starLayers * config.hexSize * 4.5;
     const svgSize = maxRadius * 2;
