@@ -11,6 +11,8 @@ let config = {
     mosaicColor1: '#006400',
     mosaicColor2: '#ffffff',
     mosaicDirection: 'diagonal1',
+    centerHighlightCenter: '#FFD700',
+    centerHighlightOuter: '#4169E1',
     edgeColor: '#333333',
     hexSize: 25,
     showLabels: true,
@@ -267,6 +269,33 @@ function createTrianglePattern(hexagons, perimeterSet) {
     return { colorMap, outlineCount, interiorCount };
 }
 
+// Center Highlight pattern - colors the single center hexagon differently from all others
+function createCenterHighlightPattern(hexagons) {
+    const colorMap = new Map();
+    const centerColor = config.centerHighlightCenter;
+    const outerColor = config.centerHighlightOuter;
+
+    let centerCount = 0;
+    let outerCount = 0;
+
+    hexagons.forEach(h => {
+        const key = `${h.q},${h.r},${h.s}`;
+
+        // The center is the single hexagon at origin (0,0,0)
+        const isCenter = h.q === 0 && h.r === 0 && h.s === 0;
+
+        if (isCenter) {
+            colorMap.set(key, centerColor);
+            centerCount++;
+        } else {
+            colorMap.set(key, outerColor);
+            outerCount++;
+        }
+    });
+
+    return { colorMap, centerCount, outerCount };
+}
+
 // Convert axial to pixel coordinates (matching Python's hex_to_pixel)
 function axialToPixel(q, r, size) {
     const x = size * Math.sqrt(3) * (q + r / 2);
@@ -318,6 +347,8 @@ function render() {
     document.getElementById('flowerInfo').style.display = 'none';
     document.getElementById('outlineInfo').style.display = 'none';
     document.getElementById('interiorInfo').style.display = 'none';
+    document.getElementById('centerHighlightInfo').style.display = 'none';
+    document.getElementById('outerHighlightInfo').style.display = 'none';
 
     if (config.patternType === 'flower') {
         const result = createFlowerPattern(hexagons, config.flowerSpacing);
@@ -342,6 +373,19 @@ function render() {
 
         document.getElementById('outlineCount').textContent = result.outlineCount;
         document.getElementById('interiorCount').textContent = result.interiorCount;
+    } else if (config.patternType === 'centerHighlight') {
+        const result = createCenterHighlightPattern(hexagons);
+        colorMap = result.colorMap;
+
+        document.getElementById('centerHighlightInfo').style.display = 'block';
+        document.getElementById('outerHighlightInfo').style.display = 'block';
+
+        // Update Legend Colors
+        document.getElementById('centerHighlightSwatch').style.backgroundColor = config.centerHighlightCenter;
+        document.getElementById('outerHighlightSwatch').style.backgroundColor = config.centerHighlightOuter;
+
+        document.getElementById('centerHighlightCount').textContent = result.centerCount;
+        document.getElementById('outerHighlightCount').textContent = result.outerCount;
     }
 
     // Calculate SVG dimensions
@@ -617,6 +661,8 @@ function updatePatternControls() {
         config.patternType === 'perimeter' ? 'block' : 'none';
     document.getElementById('mosaicControls').style.display =
         (config.patternType === 'mosaic' || config.patternType === 'triangles') ? 'block' : 'none';
+    document.getElementById('centerHighlightControls').style.display =
+        config.patternType === 'centerHighlight' ? 'block' : 'none';
 
     // Hide direction selector if triangles
     const directionContainer = document.querySelector('#mosaicDirection').parentElement;
@@ -690,6 +736,16 @@ document.getElementById('mosaicDirection').addEventListener('change', (e) => {
     render();
 });
 
+document.getElementById('centerHighlightCenter').addEventListener('input', (e) => {
+    config.centerHighlightCenter = e.target.value;
+    render();
+});
+
+document.getElementById('centerHighlightOuter').addEventListener('input', (e) => {
+    config.centerHighlightOuter = e.target.value;
+    render();
+});
+
 document.getElementById('edgeColor').addEventListener('input', (e) => {
     config.edgeColor = e.target.value;
     render();
@@ -724,6 +780,8 @@ function resetView() {
         mosaicColor1: '#006400',
         mosaicColor2: '#ffffff',
         mosaicDirection: 'diagonal1',
+        centerHighlightCenter: '#FFD700',
+        centerHighlightOuter: '#4169E1',
         edgeColor: '#333333',
         hexSize: 25,
         showLabels: true,
@@ -743,6 +801,8 @@ function resetView() {
     document.getElementById('mosaicColor1').value = '#006400';
     document.getElementById('mosaicColor2').value = '#ffffff';
     document.getElementById('mosaicDirection').value = 'diagonal1';
+    document.getElementById('centerHighlightCenter').value = '#FFD700';
+    document.getElementById('centerHighlightOuter').value = '#4169E1';
     document.getElementById('edgeColor').value = '#333333';
     document.getElementById('hexSize').value = 25;
     document.getElementById('hexSizeValue').textContent = 25;

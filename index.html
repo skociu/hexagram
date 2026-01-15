@@ -67,6 +67,10 @@
                         <input type="radio" id="patternTriangles" name="pattern" value="triangles">
                         <label for="patternTriangles">12 Triangles</label>
                     </div>
+                    <div class="radio-option">
+                        <input type="radio" id="patternCenterHighlight" name="pattern" value="centerHighlight">
+                        <label for="patternCenterHighlight">Center Highlight</label>
+                    </div>
                 </div>
             </div>
 
@@ -130,6 +134,21 @@
                     <div class="color-input">
                         <label>Color 2</label>
                         <input type="color" id="mosaicColor2" value="#ffffff">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Highlight Controls -->
+            <div class="control-group" id="centerHighlightControls" style="display: none;">
+                <h3>Center Highlight Colors</h3>
+                <div class="color-grid">
+                    <div class="color-input">
+                        <label>Center</label>
+                        <input type="color" id="centerHighlightCenter" value="#FFD700">
+                    </div>
+                    <div class="color-input">
+                        <label>Outer</label>
+                        <input type="color" id="centerHighlightOuter" value="#4169E1">
                     </div>
                 </div>
             </div>
@@ -207,6 +226,20 @@
                         <span>Color 2 Interior</span>
                     </div>
                     <span id="interiorCount">0</span>
+                </div>
+                <div class="info-item" id="centerHighlightInfo" style="display:none;">
+                    <div class="legend-label">
+                        <div class="color-swatch" id="centerHighlightSwatch"></div>
+                        <span>Center</span>
+                    </div>
+                    <span id="centerHighlightCount">0</span>
+                </div>
+                <div class="info-item" id="outerHighlightInfo" style="display:none;">
+                    <div class="legend-label">
+                        <div class="color-swatch" id="outerHighlightSwatch"></div>
+                        <span>Outer</span>
+                    </div>
+                    <span id="outerHighlightCount">0</span>
                 </div>
             </div>
         </div>
